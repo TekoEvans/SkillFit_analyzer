@@ -139,8 +139,10 @@ celerybeat.pid
 .envrc
 .venv
 env/
+skil_env/
 venv/
 ENV/
+offrers_pdf/
 env.bak/
 venv.bak/
 
@@ -205,3 +207,6 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+requirements.txt
+rh_jobs.db
