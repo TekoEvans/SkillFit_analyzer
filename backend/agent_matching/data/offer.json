@@ -1,0 +1,16 @@
+{
+  "offer_id": "OFFRE-001",
+  "offer_title": "Data Analyst Marketing",
+  "main_missions": "Analyser les campagnes marketing, créer des dashboards Power BI.",
+  "technical_skills_required": ["SQL", "Python", "Power BI"],
+  "technical_skills_optional": ["Google Analytics", "Tableau"],
+  "soft_skills_required": ["Rigueur", "Esprit d'analyse", "Travail en équipe"],
+  "languages_required": [
+    {"language": "Français", "level": "Courant", "required": true},
+    {"language": "Anglais", "level": "Intermédiaire", "required": false}
+  ],
+  "experience_min_years": 2,
+  "experience_level": "Confirmé",
+  "contract_type": "CDI",
+  "work_location": "Paris"
+}
