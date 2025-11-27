@@ -1,10 +1,9 @@
-import sqlite3
+import sqlite3, json
 from datetime import datetime, timezone
-from typing import List
-from models.job_offer import *
+from typing import List, Optional
+from backend.models.job_offer import JobOffer
 
 DB_PATH = "rh_jobs.db"
-
 
 
 class JobOfferRepository:
@@ -12,9 +11,9 @@ class JobOfferRepository:
 
     def __init__(self, db_path: str = DB_PATH):
         self.db_path = db_path
-        print("="*10)
+        print("=" * 10)
         print("INITIALISATION DE LA BASE DE DONNEE RH")
-        print("="*10)
+        print("=" * 10)
         self.init_db()
 
     def init_db(self):
@@ -22,66 +21,82 @@ class JobOfferRepository:
             cur = conn.cursor()
             cur.execute(
                 """
-                    CREATE TABLE IF NOT EXISTS job_offers (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        title TEXT NOT NULL,
-                        department TEXT NOT NULL,
-                        description TEXT NOT NULL,
-                        location TEXT,
-                        salary TEXT,
-                        status INTEGER DEFAULT 1 ,
-                        file_path TEXT ,
-                        created_at TEXT NOT NULL,
-                        updated_at TEXT
+                CREATE TABLE IF NOT EXISTS job_offers (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    title TEXT NOT NULL,
+                    description TEXT NOT NULL,
+                    responsibilities TEXT,      
+                    skills TEXT,                
+                    location TEXT,
+                    experience TEXT,
+                    contact_email TEXT,
+                    full_text TEXT,
+                    filename TEXT,
+                    offer_date TEXT,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT
                 )
                 """
             )
-            print("la tables des offres a ete cree")
+            print("La table des offres a été créée")
             conn.commit()
 
-    def add(self, offer: JobOffer) -> int:
+    def add(self, offer: JobOffer) -> str:
         offer.created_at = datetime.now(timezone.utc).isoformat()
+        offer.updated_at = offer.created_at
+        
         with sqlite3.connect(self.db_path) as conn:
             cur = conn.cursor()
             cur.execute(
                 """
-                INSERT INTO job_offers (title, department, description, location, salary, status, created_at,file_path)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO job_offers (
+                    title, description, responsibilities, skills,
+                    location, experience, contact_email, full_text, filename,
+                    offer_date, created_at, updated_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     offer.title,
-                    offer.department,
                     offer.description,
+                    offer.responsibilities,
+                    json.dumps(offer.skills),
                     offer.location,
-                    offer.salary,
-                    offer.status,
+                    offer.experience,
+                    offer.contact_email,
+                    offer.full_text,
+                    offer.filename,
+                    offer.offer_date,
                     offer.created_at,
-                    offer.file_path
+                    offer.updated_at,
                 ),
             )
             conn.commit()
-            offer.id = cur.lastrowid
-            return f'OFFRE_00{offer.id}'
-        
+            offer.offer_id = cur.lastrowid
+            offer.offer_id = f'OFFRE_00{offer.offer_id}'
+            return offer.offer_id
 
-    def get(self, offer_id: int) -> JobOffer:
+    def get(self, offer_id: int) -> Optional[JobOffer]:
         with sqlite3.connect(self.db_path) as conn:
             cur = conn.cursor()
             cur.execute("SELECT * FROM job_offers WHERE id = ?", (offer_id,))
-            row = cur.fetchone()
-            if not row:
+            r = cur.fetchone()
+            if not r:
                 return None
             return JobOffer(
-                title=row[1],
-                department=row[2],
-                description=row[3],
-                location=row[4],
-                salary=row[5],
-                status=row[6],
-                offer_id=row[0],
-                created_at=row[7],
-                file_path=row[8],
-                updated_at=row[9],
+               offer_id=r[0],
+                    title=r[1],
+                    description=r[2],
+                    responsibilities=r[3],
+                    skills=r[4],
+                    location=r[5],
+                    experience=r[6],
+                    contact_email=r[7],
+                    full_text=r[8],
+                    filename=r[9],
+                    offer_date=r[10],
+                    created_at=r[11],
+                    updated_at=r[12]
             )
 
     def list(self) -> List[JobOffer]:
@@ -90,52 +105,54 @@ class JobOfferRepository:
             cur.execute("SELECT * FROM job_offers ORDER BY id DESC")
             rows = cur.fetchall()
 
-
             if not rows:
                 print("📭 Aucune offre d'emploi disponible.")
                 return []
 
-
             return [
-                    JobOffer(
-                        title=r[1], department=r[2], description=r[3],
-                        location=r[4], salary=r[5], status=r[6],
-                        file_path=r[8],
-                        offer_id=r[0], created_at=r[7], updated_at=r[9]
-                    ) for r in rows
-                    ]
-        with sqlite3.connect(self.db_path) as conn:
-            cur = conn.cursor()
-            cur.execute("SELECT * FROM job_offers ORDER BY id DESC")
-            rows = cur.fetchall()
-            return [
-                    JobOffer(
-                        title=r[1], department=r[2], description=r[3],
-                        location=r[4], salary=r[5], status=r[6],
-                        file_path=r[7], offer_id=r[0], created_at=r[8], updated_at=r[9]
-                    ) for r in rows
-                    ]
+                JobOffer(
+                   
+                    offer_id=r[0],
+                    title=r[1],
+                    description=r[2],
+                    responsibilities=r[3],
+                    skills=r[4],
+                    location=r[5],
+                    experience=r[6],
+                    contact_email=r[7],
+                    full_text=r[8],
+                    filename=r[9],
+                    offer_date=r[10],
+                    created_at=r[11],
+                    updated_at=r[12]
+                ) for r in rows
+            ]
 
     def update(self, offer: JobOffer) -> bool:
-        offer.updated_at = datetime.utcnow().isoformat()
+        offer.updated_at = datetime.now(timezone.utc).isoformat()
         with sqlite3.connect(self.db_path) as conn:
             cur = conn.cursor()
             cur.execute(
                 """
                 UPDATE job_offers SET
-                    title = ?, department = ?, description = ?,
-                    location = ?, salary = ?, status = ?, file_path = ? , updated_at = ?
+                    title = ?, description = ?, responsibilities = ?, skills = ?,
+                    location = ?, experience = ?, contact_email = ?, full_text = ?,
+                    filename = ?, offer_date = ?, updated_at = ?
                 WHERE id = ?
                 """,
                 (
                     offer.title,
-                    offer.department,
                     offer.description,
+                    offer.responsibilities,
+                    offer.skills,
                     offer.location,
-                    offer.salary,
-                    offer.status,
+                    offer.experience,
+                    offer.contact_email,
+                    offer.full_text,
+                    offer.filename,
+                    offer.offer_date,
                     offer.updated_at,
-                    offer.id,
+                    offer.offer_id,
                 ),
             )
             conn.commit()
@@ -143,21 +160,18 @@ class JobOfferRepository:
 
     def delete(self, offer_id: int) -> bool:
         """Supprime une offre après confirmation et vérifie son existence."""
-        # Vérifier si l'offre existe
         existing = self.get(offer_id)
         if not existing:
             print(f"❌ L'offre avec ID {offer_id} n'existe pas.")
             return False
 
-
-        # Demander confirmation utilisateur
-        confirmation = input(f"Êtes‑vous sûr de vouloir supprimer l'offre {offer_id} (oui/non) ? ").strip().lower()
+        confirmation = input(
+            f"Êtes-vous sûr de vouloir supprimer l'offre {offer_id} (oui/non) ? "
+        ).strip().lower()
         if confirmation not in ["oui", "o", "yes", "y"]:
             print("❎ Suppression annulée par l'utilisateur.")
             return False
 
-
-        # Suppression si confirmé
         with sqlite3.connect(self.db_path) as conn:
             cur = conn.cursor()
             cur.execute("DELETE FROM job_offers WHERE id = ?", (offer_id,))
@@ -174,26 +188,25 @@ if __name__ == "__main__":
     repo = JobOfferRepository()
 
     # Création d'une offre
-    # offer = JobOffer(
-    #     title="Développeur Python",
-    #     department="Informatique",
-    #     description="Développement interne",
-    #     location="Paris",
-    #     salary="45-55k€",
-    #     file_path='/offrers_pdf/annonce_data.pdf'
-    # )
+    offer = JobOffer(
+                    title="Chef de Projet Digital",
+                    description="Pilotage de projets web et mobile pour clients grands comptes",
+                    responsibilities="Gestion d'équipe, planification, relation client",
+                    skills="Agile, Scrum, JIRA, MS Project",
+                    location="location",
+                    experience=5,
+                    contact_email="rh@cabinet-conseil.fr",
+                    filename="pdf",  # Extrait juste le nom du fichier
+                    # filename=pdf_path.split('/')[-1],  # Extrait juste le nom du fichier
+                    offer_date="2025-02-01"
+                    )
+    new_id = repo.add(offer)
+    print("Offre créée, id =", new_id)
 
-    # new_id = repo.add(offer)
-    # print("Offre créée, id =", new_id)
-
-    # # # Liste
-    # print("Liste des offres :")
-    # for o in repo.list():
-    #     print(o)
-
-    # Modification
-    # offer.status = "fermée"
-    # repo.update(offer)
+    # Liste
+    print("Liste des offres :")
+    for o in repo.list():
+        print(o)
 
     # Suppression
-    repo.delete(1)
+# repo.delete(1)

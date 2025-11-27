@@ -1,0 +1,13 @@
+Tu dois renvoyer uniquement du JSON valide, sans retour à la ligne inutile ou caractères spéciaux. 
+Exemple : 
+{
+  "title": "...",
+  "description": "...",
+  "responsibilities": [...],
+  "skills": [...],
+  "location": "...",
+  "experience": "...",
+  "contact_email": "...",
+  "filename": "...",
+  "offer_date": "..."
+}
