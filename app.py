@@ -1,6 +1,7 @@
 import streamlit as st
 import json
 import os
+import threading
 from pathlib import Path
 from datetime import datetime
 from backend.models.job_offer import JobOffer
@@ -27,8 +28,11 @@ repo = JobOfferRepository()
 
 BASE_DIR = Path(__file__).resolve().parent
 
+# _run_cli()
 
-_run_cli()
+# for thread in threading.enumerate():
+#     if thread != threading.current_thread():
+#         thread.join()
 
 
 json_path = BASE_DIR / "backend" / "email_collector" / "candidates" / "candidates_statisticien_20251127.json"

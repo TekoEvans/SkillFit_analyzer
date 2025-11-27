@@ -7,6 +7,8 @@ from backend.models.job_offer import JobOffer
 from backend.service_database import JobOfferRepository
 
 
-BASE_DIR =  os.path.join(Path(__file__).resolve().parent, "backend\email_collector\candidates\candidates_finance_20251127.json")
-print(BASE_DIR)
+# BASE_DIR =  os.path.join(Path(__file__).resolve().parent, "backend\email_collector\candidates\candidates_finance_20251127.json")
+# print(BASE_DIR)
+BASE_DIR = Path(__file__).resolve().parent
+print(BASE_DIR / "backend" / "email_collector" / "candidates" / "candidates_statisticien_20251127.json")
 

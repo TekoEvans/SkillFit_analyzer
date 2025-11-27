@@ -82,11 +82,11 @@ def analyze_offer(text):
 
 
 
-def run(pdf_name):
+def run(pdf_path):
     # pdf path
-    pdf_path =  Path(BASE_DIR)/"offres_pdf"/pdf_name
+    # pdf_path =  Path(BASE_DIR)/"offres_pdf"/pdf_name
     # Nom du fichier à partir du chemin
-    # pdf_name = os.path.basename(pdf_path)
+    pdf_name = os.path.basename(pdf_path)
 
     print(f"\n➡ Traitement : {pdf_name}")
 
@@ -108,12 +108,17 @@ def run(pdf_name):
 
     # Ajouter metadata
     data["filename"] = pdf_name
+  
 
     # Date du PDF
     timestamp = os.path.getmtime(pdf_path)
     data["offer_date"] = datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d")
     # Sauvegarde
-    out_path = os.path.join(OUTPUT_DIR, f"{pdf_name.replace('.pdf','')}.json")
+    # out_path =r"E:\All Evans\cours HETIC\MASRER  DATA & IA  2\Creation d'un agent\SkillFit_analyzer\backend\agent_offres\outputs\ok.json"
+    # out_path = os.path.join(r"E:\All Evans\cours HETIC\MASRER  DATA & IA  2\Creation d'un agent\SkillFit_analyzer\backend\agent_offres\outputs", f"{pdf_name.replace('.pdf','')}.json")
+    BASE_DIR = Path(__file__).resolve().parent
+    out_path = Path(BASE_DIR)/"outputs"/f"{pdf_name.replace('.pdf','')}.json"
+    print(out_path)
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
 
@@ -126,7 +131,10 @@ def run(pdf_name):
 # Lancement
 # =============================================
 if __name__ == "__main__":
-    print(run("annonce_data.pdf"))
+    print(run("annonce_statisticien.pdf"))
+
+    # BASE_DIR = Path(__file__).resolve().parent
+    # print(Path(BASE_DIR)/"outputs"/"pdf")
     
     
     

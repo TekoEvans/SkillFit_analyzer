@@ -28,7 +28,7 @@ except Exception:
         from processor import process_cvs
 
 
-async def _run_cli(target_job="statisticien"):
+def _run_cli(target_job="statisticien"):
     print("=" * 60)
     print("🎯 EXTRACTEUR DE CV PAR POSTE")
     print("=" * 60)
@@ -45,7 +45,7 @@ async def _run_cli(target_job="statisticien"):
     print("\n🚀 Démarrage du traitement...\n")
     try:
         result = process_cvs(target_job_title=target_job, max_emails=100)
-        await print(f" Terminé — {result['processed']} CV(s) traités. Fichier: {result['json_file']}")
+        print(f" Terminé — {result['processed']} CV(s) traités. Fichier: {result['json_file']}")
     except KeyboardInterrupt:
         print("\n Interruption par l'utilisateur")
     except Exception as e:
