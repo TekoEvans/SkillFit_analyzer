@@ -1,0 +1,12 @@
+# Environnement
+.env
+*.pyc
+__pycache__/
+
+# Gmail secrets
+credentials.json
+token.json
+
+# Outputs & downloads
+downloads/
+outputs/
