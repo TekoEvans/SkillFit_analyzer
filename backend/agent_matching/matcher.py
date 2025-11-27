@@ -45,13 +45,26 @@ def run_matching(offer: dict, cvs: list, top_n: int) -> dict:
     
     # 2. Filtrer les VERY_HIGH
     very_high = [r for r in results if r["level"] == "VERY_HIGH"]
+    high = [r for r in results if r["level"] == "HIGH"]
+    medium = [r for r in results if r["level"] == "MEDIUM"]
     
     # 3. Trier par date de candidature (plus ancien = prioritaire)
     very_high.sort(key=lambda r: r["cv"].get("application_datetime", ""))
+    high.sort(key=lambda r: r["cv"].get("application_datetime", ""))
+    medium.sort(key=lambda r: r["cv"].get("application_datetime", ""))
     
     # 4. Sélectionner les N premiers
     retained = very_high[:top_n]
-    
+    i=0
+    while len(retained)<top_n and i < len(high):
+        
+        retained.append(high[i])
+        i=+1
+    while len(retained)<top_n and i < len(medium):
+        
+        retained.append(medium[i])
+        i=+1    
+
     # 5. Les autres sont non retenus
     retained_cv_ids = {r["cv"]["cv_id"] for r in retained}
     non_retained = [r for r in results if r["cv"]["cv_id"] not in retained_cv_ids]

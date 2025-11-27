@@ -3,6 +3,10 @@ import json
 from groq import Groq
 import config
 from prompts import SYSTEM_PROMPT, USER_PROMPT_TEMPLATE
+from dotenv import load_dotenv
+load_dotenv()
+
+
 
 
 def call_llm(offer: dict, cv: dict) -> dict:

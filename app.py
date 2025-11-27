@@ -1,10 +1,13 @@
 import streamlit as st
 import json
 import os
+from pathlib import Path
 from datetime import datetime
 from backend.models.job_offer import JobOffer
 from backend.service_database import JobOfferRepository
 from backend.agent_offres.annonces_extractor import run
+from backend.email_collector.email_collector import _run_cli
+
 
 
 # Configuration de la page
@@ -21,52 +24,17 @@ os.makedirs(PDF_UPLOAD_DIR, exist_ok=True)
 # Initialisation de la session state
 repo = JobOfferRepository()
 
-if 'cvs' not in st.session_state:
-    st.session_state.cvs = [
-        {
-            'id': 'cv_1',
-            'name': 'Sophie Martin',
-            'skills': ['Python', 'React', 'PostgreSQL', 'Docker', 'AWS'],
-            'experience': '5',
-            'education': 'Master en Informatique'
-        },
-        {
-            'id': 'cv_2',
-            'name': 'Thomas Dubois',
-            'skills': ['JavaScript', 'Node.js', 'MongoDB', 'React', 'TypeScript'],
-            'experience': '3',
-            'education': 'Licence en Développement Web'
-        },
-        {
-            'id': 'cv_3',
-            'name': 'Marie Leroy',
-            'skills': ['Java', 'Spring', 'MySQL', 'Angular', 'Git'],
-            'experience': '7',
-            'education': 'Diplôme d\'Ingénieur'
-        },
-        {
-            'id': 'cv_4',
-            'name': 'Lucas Bernard',
-            'skills': ['Python', 'Django', 'React', 'Docker', 'Kubernetes'],
-            'experience': '4',
-            'education': 'Master en Génie Logiciel'
-        },
-        {
-            'id': 'cv_5',
-            'name': 'Emma Petit',
-            'skills': ['PHP', 'Laravel', 'Vue.js', 'MySQL', 'Redis'],
-            'experience': '2',
-            'education': 'BTS Informatique'
-        },
-        {
-            'id': 'cv_6',
-            'name': 'Alexandre Moreau',
-            'skills': ['React', 'Node.js', 'PostgreSQL', 'GraphQL', 'AWS'],
-            'experience': '6',
-            'education': 'Master en Systèmes Distribués'
-        }
-    ]
 
+BASE_DIR = Path(__file__).resolve().parent
+
+
+_run_cli()
+
+
+json_path = BASE_DIR / "backend" / "email_collector" / "candidates" / "candidates_statisticien_20251127.json"
+
+with open(json_path, "r", encoding="utf-8") as f:
+    cvs = json.load(f)
 # Fonction d'analyse de matching
 def analyze_match(job, cv):
     score = 0
@@ -107,29 +75,23 @@ tab1, tab2, tab3 = st.tabs(["📝 Ajouter une Offre", "🔍 Analyser", "🏆 Ré
 # TAB 1: Ajouter une offre
 with tab1:
     st.header("Nouvelle Offre d'Emploi")
+    uploaded_pdf = st.file_uploader(
+    "Joindre l'offre d'emploi *",
+    type=["pdf"]
+)
     
     with st.form("job_form"):
-        # col1, col2 = st.columns(2)
+       col1, col2, col3 = st.columns([1, 2, 1])
+
+    with col2:
         
-        # with col1:
-        #     title = st.text_input("Titre du poste *", placeholder="Ex: Développeur Full Stack Senior")
-        #     required_skills = st.text_input(
-        #         "Compétences requises (séparées par des virgules)",
-        #         placeholder="Ex: React, Node.js, PostgreSQL"
-        #     )
-        
-        # with col2:
-        #     experience = st.number_input("Années d'expérience requises", min_value=0, max_value=20, value=0)
-            
-        # description = st.text_area(
-        #     "Description du poste *",
-        #     height=150,
-        #     placeholder="Décrivez les responsabilités, missions, environnement de travail..."
-        # )
-        uploaded_pdf = st.file_uploader(
-        "Joindre l'offre d'emploi *",
-        type=["pdf"]
-    )
+        top_n = st.number_input(
+            "Nombres de CVs à retenir",
+            min_value=1,
+            max_value=100,
+            value=1
+        )
+    
         
         submitted = st.form_submit_button("✅ Ajouter l'Offre d'Emploi", use_container_width=True)
         
@@ -147,18 +109,7 @@ with tab1:
             
 
             # Création de l'objet JobOffer
-            offer = JobOffer(
-                    title="Chef de Projet Digital",
-                    description="Pilotage de projets web et mobile pour clients grands comptes",
-                    responsibilities="Gestion d'équipe, planification, relation client",
-                    skills="Agile, Scrum, JIRA, MS Project",
-                    location="location",
-                    experience=5,
-                    contact_email="rh@cabinet-conseil.fr",
-                    filename=pdf_path.split('/')[-1],  # Extrait juste le nom du fichier
-                    # filename=pdf_path.split('/')[-1],  # Extrait juste le nom du fichier
-                    offer_date="2025-02-01"
-                    )
+            
             json_offer = run(pdf_path.split('/')[-1])
             offer = JobOffer(
                             title=json_offer["title"],
@@ -173,8 +124,6 @@ with tab1:
                             
                         )
 
-            
-
             offer_id = repo.add(offer)
 
             st.success(f"✅ Offre enregistrée avec succès : **{offer_id}**")
@@ -188,7 +137,7 @@ with tab1:
         st.subheader(f"📋 Offres enregistrées ({len(jobs)})")
         
         for job in jobs:
-            with st.expander(f"🔹 {job.title}_{job.location}_{job.offer_date}", expanded=False):
+            with st.expander(f" {job.title}_{job.location}_{job.offer_date}", expanded=False):
                 st.write(f"**Description:** {job.description}")
                 if job.skills:
                     st.write(f"**Compétences:** {job.skills}")
@@ -199,16 +148,18 @@ with tab2:
     st.header("Analyser les Candidatures")
     
     # Info sur les CVs
-    st.info(f"📄 **CVs en mémoire:** {len(jobs)} candidats disponibles")
+    st.info(f"📄 **CVs en mémoire:** {len(cvs)} candidats disponibles")
     
     # Afficher les CVs
     with st.expander("👥 Voir tous les CV en mémoire"):
-        for cv in st.session_state.cvs:
+        for cv in cvs:
             st.markdown(f"""
-            **{cv['name']}**  
-            - Compétences: {', '.join(cv['skills'])}  
-            - Expérience: {cv['experience']} ans  
-            - Formation: {cv['education']}
+            **{cv['full_name']}**  
+            - Email: {cv['email']}  
+            - Tel: {cv['phone_number']}  
+            - Compétences: {cv['technical_skills']}  
+            - Expérience: {cv['summary']}   
+            - Formation: {cv['educations'][0]["title"]}
             """)
             st.markdown("---")
     
@@ -246,19 +197,19 @@ with tab2:
                     with st.spinner("🔄 Analyse en cours..."):
                         # Analyse de tous les CVs
                         analyzed = []
-                        for cv in st.session_state.cvs:
-                            score, matched_skills = analyze_match(selected_job, cv)
-                            analyzed.append({
-                                **cv,
-                                'match_score': score,
-                                'matched_skills': matched_skills,
-                                'total_skills': len(selected_job['skills']) if selected_job['skills'] else 0
-                            })
+                        # for cv in st.session_state.cvs:
+                        #     score, matched_skills = main(cvs,top_n,selected_job.jo)
+                        #     analyzed.append({
+                        #         **cv,
+                        #         'match_score': score,
+                        #         'matched_skills': matched_skills,
+                        #         'total_skills': len(selected_job['skills']) if selected_job['skills'] else 0
+                        #     })
                         
-                        # Tri par score
-                        analyzed.sort(key=lambda x: x['match_score'], reverse=True)
-                        st.session_state.top_candidates = analyzed[:5]
-                        st.session_state.analyzed_job = selected_job['title']
+                        # # Tri par score
+                        # analyzed.sort(key=lambda x: x['match_score'], reverse=True)
+                        # st.session_state.top_candidates = analyzed[:5]
+                        # st.session_state.analyzed_job = selected_job['title']
                     
                     st.success("✅ Analyse terminée ! Consultez l'onglet 'Résultats'")
                     st.balloons()

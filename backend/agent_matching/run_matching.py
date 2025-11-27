@@ -32,7 +32,7 @@ def main():
     
     # Lancer le matching
     output = run_matching(offer, cvs, args.top_n)
-    
+
     # Sauvegarder les résultats
     print("Sauvegarde des résultats...")
     save_results(output, args.output_dir)
@@ -42,3 +42,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

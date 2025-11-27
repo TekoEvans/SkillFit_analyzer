@@ -1,6 +1,7 @@
 import os
 import json
 import re
+from pathlib import Path
 from datetime import datetime
 from groq import Groq
 from dotenv import load_dotenv
@@ -11,10 +12,11 @@ load_dotenv()
 # =============================================
 # CONFIG
 # =============================================
-INPUT_DIR = r"E:/All Evans/cours HETIC/MASRER  DATA & IA  2/Creation d'un agent/SkillFit_analyzer/offres_pdf/annonce_data.pdf"
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PROMPT_PATH = os.path.join(BASE_DIR, "prompt.txt")
+OUTPUT_DIR = "outputs"
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+PROMPT_PATH = os.path.join(Path(__file__).resolve().parent, "prompt.txt")
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
 
@@ -77,9 +79,14 @@ def analyze_offer(text):
 # =============================================
 # MAIN LOGIQUE : parcours PDFs
 # =============================================
-def run(pdf_path):
+
+
+
+def run(pdf_name):
+    # pdf path
+    pdf_path =  Path(BASE_DIR)/"offres_pdf"/pdf_name
     # Nom du fichier à partir du chemin
-    pdf_name = os.path.basename(pdf_path)
+    # pdf_name = os.path.basename(pdf_path)
 
     print(f"\n➡ Traitement : {pdf_name}")
 
@@ -105,6 +112,12 @@ def run(pdf_path):
     # Date du PDF
     timestamp = os.path.getmtime(pdf_path)
     data["offer_date"] = datetime.fromtimestamp(timestamp).strftime("%Y-%m-%d")
+    # Sauvegarde
+    out_path = os.path.join(OUTPUT_DIR, f"{pdf_name.replace('.pdf','')}.json")
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=4, ensure_ascii=False)
+
+    print(f"✔ JSON généré → {out_path}")
 
     # Retourner uniquement le JSON
     return data
@@ -113,5 +126,7 @@ def run(pdf_path):
 # Lancement
 # =============================================
 if __name__ == "__main__":
-    print(run(INPUT_DIR))
-    # print(BASE_DIR)
+    print(run("annonce_data.pdf"))
+    
+    
+    

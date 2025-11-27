@@ -141,6 +141,9 @@ celerybeat.pid
 .venv
 env/
 offres_pdf/
+outputs/
+cv_files/
+candidates/
 skil_env/
 venv/
 ENV/
