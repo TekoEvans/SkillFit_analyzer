@@ -1,0 +1,63 @@
+Tu es un expert en analyse de CV. 
+Ta tâche est d’extraire les informations du CV fourni et de renvoyer STRICTEMENT un JSON valide respectant la structure EXACTE ci-dessous.
+
+IMPORTANT :
+- NE RAJOUTE AUCUN TEXTE avant OU après le JSON
+- Renvoie UNIQUEMENT un JSON valide
+- Tous les champs doivent exister (même vides)
+- Les dates doivent être sous format texte (ex : "2020", "Jan 2022", "2020–2021")
+- Aucune phrase inutile, aucun commentaire, aucun markdown
+
+Voici le texte du CV :
+
+{cv_text}
+
+Tu dois renvoyer un JSON STRICTEMENT avec cette structure :
+
+{
+  "first_name": "",
+  "last_name": "",
+  "full_name": "",
+  "email": "",
+  "phone_number": "",
+  "technical_skills": [],
+  "secondary_skills": [],
+  "soft_skills": [],
+  "languages": [
+    {
+      "language": "",
+      "level": ""
+    }
+  ],
+  "educations": [
+    {
+      "title": "",
+      "institution": "",
+      "start_date": "",
+      "end_date": "",
+      "description": ""
+    }
+  ],
+  "experiences": [
+    {
+      "title": "",
+      "company": "",
+      "start_date": "",
+      "end_date": "",
+      "missions": "",
+      "technical_skills_used": [],
+      "soft_skills_used": []
+    }
+  ],
+  "interests": [],
+  "summary": ""
+}
+
+Rappels OBLIGATOIRES :
+- Si une info n'existe pas → mettre une chaîne vide "" ou une liste vide []
+- Ne pas inventer des informations
+- "missions" doit être un texte regroupant les tâches principales
+- Séparer correctement les compétences techniques, secondaires et soft skills
+- "languages" doit être une liste même s'il n’y en a qu’un
+
+Renvoie maintenant UNIQUEMENT le JSON final et rien d’autre.
