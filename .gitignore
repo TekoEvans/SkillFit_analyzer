@@ -22,9 +22,14 @@ var/
 wheels/
 share/python-wheels/
 *.egg-info/
+cv_files/
+outputs/
+candidates/
+offres_pdf/
 .installed.cfg
-*.egg
 MANIFEST
+*.egg
+*.json
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
